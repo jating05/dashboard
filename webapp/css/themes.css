@@ -1,0 +1,19 @@
+/* Light Theme */
+body.light-theme {
+    background-color: #f8f9fa;
+    color: #212529;
+}
+
+.card.light-theme {
+    background-color: #ffffff;
+}
+
+/* Dark Theme */
+body.dark-theme {
+    background-color: #212529;
+    color: #f8f9fa;
+}
+
+.card.dark-theme {
+    background-color: #343a40;
+}

@@ -1,0 +1,23 @@
+body {
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.card {
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#loading-spinner {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.table tbody tr.conflict-pending {
+    background-color: rgba(255, 0, 0, 0.1);
+}
+
+.table tbody tr.no-conflict {
+    background-color: rgba(0, 255, 0, 0.1);
+}
