@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Multi-Select Dropdown Example</title>
+  <style>
+    /* Reset and Base Styles */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      padding: 50px;
+      background-color: #f4f4f4;
+    }
+
+    /* Multi-Select Container */
+    .multi-select-container {
+      position: relative;
+      width: 400px;
+      max-width: 100%;
+      margin: 0 auto;
+    }
+
+    /* Selected Items Area */
+    .selected-items {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      border: 1px solid #ccc;
+      padding: 5px;
+      min-height: 40px;
+      background-color: #fff;
+      cursor: text;
+      border-radius: 4px;
+      transition: border-color 0.3s;
+    }
+
+    .selected-items:focus-within {
+      border-color: #66afe9;
+      box-shadow: 0 0 5px rgba(102, 175, 233, 0.6);
+    }
+
+    /* Selected Tag */
+    .selected-item {
+      background-color: #e2e2e2;
+      border-radius: 3px;
+      padding: 5px 8px;
+      margin: 2px;
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+    }
+
+    .selected-item span {
+      margin-right: 5px;
+    }
+
+    .selected-item .remove-item {
+      cursor: pointer;
+      font-weight: bold;
+      color: #555;
+    }
+
+    .selected-item .remove-item:hover {
+      color: #000;
+    }
+
+    /* Input Field */
+    .selected-items input {
+      border: none;
+      flex: 1;
+      min-width: 120px;
+      padding: 5px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    /* Dropdown Menu */
+    .dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      border: 1px solid #ccc;
+      border-top: none;
+      background-color: #fff;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 1000;
+      display: none;
+      border-radius: 0 0 4px 4px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Dropdown List */
+    .dropdown ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Dropdown Items */
+    .dropdown li {
+      padding: 10px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .dropdown li:hover {
+      background-color: #f1f1f1;
+    }
+
+    .dropdown li.selected {
+      background-color: #d1e7fd;
+    }
+
+    /* No Options Found */
+    .dropdown li.no-options {
+      cursor: default;
+      color: #999;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 500px) {
+      .multi-select-container {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h2>Multi-Select Dropdown Example</h2>
+  <div class="multi-select-container">
+    <div class="selected-items" id="selected-items" tabindex="0">
+      <!-- Selected items will appear here -->
+      <input type="text" id="search-input" placeholder="Select options..." autocomplete="off" />
+    </div>
+    <div class="dropdown" id="dropdown">
+      <ul id="options-list">
+        <!-- Options will be dynamically generated -->
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const multiSelectContainer = document.querySelector('.multi-select-container');
+      const selectedItemsContainer = document.getElementById('selected-items');
+      const dropdown = document.getElementById('dropdown');
+      const optionsList = document.getElementById('options-list');
+      const searchInput = document.getElementById('search-input');
+
+      // Sample options
+      const options = [
+        'Apple',
+        'Banana',
+        'Cherry',
+        'Date'
+      ];
+
+      let selectedItems = [];
+
+      /**
+       * Render the dropdown options based on the filter and selected items.
+       * @param {string} filter - The current input value to filter options.
+       */
+      function renderOptions(filter = '') {
+        optionsList.innerHTML = '';
+        const filteredOptions = options.filter(option => 
+          option.toLowerCase().includes(filter.toLowerCase()) &&
+          !selectedItems.includes(option)
+        );
+
+        if (filteredOptions.length === 0) {
+          const li = document.createElement('li');
+          li.textContent = 'No options found';
+          li.classList.add('no-options');
+          optionsList.appendChild(li);
+          return;
+        }
+
+        filteredOptions.forEach(option => {
+          const li = document.createElement('li');
+          li.textContent = option;
+          li.addEventListener('click', () => selectItem(option));
+          optionsList.appendChild(li);
+        });
+      }
+
+      /**
+       * Render the selected items as tags.
+       */
+      function renderSelectedItems() {
+        // Remove all existing selected item tags except the input field
+        selectedItemsContainer.querySelectorAll('.selected-item').forEach(item => item.remove());
+
+        selectedItems.forEach(item => {
+          const div = document.createElement('div');
+          div.classList.add('selected-item');
+
+          const span = document.createElement('span');
+          span.textContent = item;
+
+          const removeBtn = document.createElement('span');
+          removeBtn.classList.add('remove-item');
+          removeBtn.textContent = '×';
+          removeBtn.setAttribute('aria-label', `Remove ${item}`);
+          removeBtn.title = `Remove ${item}`;
+          removeBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent triggering the container's click event
+            removeItem(item);
+          });
+
+          div.appendChild(span);
+          div.appendChild(removeBtn);
+          selectedItemsContainer.insertBefore(div, searchInput);
+        });
+      }
+
+      /**
+       * Add an item to the selected items.
+       * @param {string} item - The item to select.
+       */
+      function selectItem(item) {
+        selectedItems.push(item);
+        renderSelectedItems();
+        renderOptions(searchInput.value);
+        searchInput.value = '';
+        searchInput.focus();
+      }
+
+      /**
+       * Remove an item from the selected items.
+       * @param {string} item - The item to remove.
+       */
+      function removeItem(item) {
+        selectedItems = selectedItems.filter(i => i !== item);
+        renderSelectedItems();
+        renderOptions(searchInput.value);
+      }
+
+      /**
+       * Show or hide the dropdown.
+       * @param {boolean} show - Whether to show the dropdown.
+       */
+      function toggleDropdown(show) {
+        dropdown.style.display = show ? 'block' : 'none';
+        if (show) {
+          renderOptions(searchInput.value);
+        }
+      }
+
+      /**
+       * Close the dropdown if clicked outside the container.
+       * @param {Event} e - The click event.
+       */
+      function handleClickOutside(e) {
+        if (!multiSelectContainer.contains(e.target)) {
+          toggleDropdown(false);
+        }
+      }
+
+      /**
+       * Handle keyboard interactions for accessibility.
+       * @param {KeyboardEvent} e - The keyboard event.
+       */
+      function handleKeyboard(e) {
+        switch (e.key) {
+          case 'ArrowDown':
+            e.preventDefault();
+            focusNextOption();
+            break;
+          case 'ArrowUp':
+            e.preventDefault();
+            focusPreviousOption();
+            break;
+          case 'Enter':
+            e.preventDefault();
+            const focused = document.activeElement;
+            if (focused && focused.parentElement === optionsList) {
+              focused.click();
+            }
+            break;
+          case 'Escape':
+            toggleDropdown(false);
+            break;
+          default:
+            break;
+        }
+      }
+
+      /**
+       * Focus the next option in the dropdown.
+       */
+      function focusNextOption() {
+        const options = dropdown.querySelectorAll('li:not(.no-options)');
+        if (options.length === 0) return;
+        let index = Array.from(options).findIndex(option => option === document.activeElement);
+        if (index < options.length - 1) {
+          options[index + 1].focus();
+        }
+      }
+
+      /**
+       * Focus the previous option in the dropdown.
+       */
+      function focusPreviousOption() {
+        const options = dropdown.querySelectorAll('li:not(.no-options)');
+        if (options.length === 0) return;
+        let index = Array.from(options).findIndex(option => option === document.activeElement);
+        if (index > 0) {
+          options[index - 1].focus();
+        }
+      }
+
+      // Initialize options on page load
+      renderOptions();
+
+      // Event Listeners
+
+      // Show dropdown when container is clicked
+      multiSelectContainer.addEventListener('click', () => {
+        toggleDropdown(true);
+        searchInput.focus();
+      });
+
+      // Hide dropdown when clicking outside
+      document.addEventListener('click', handleClickOutside);
+
+      // Filter options based on input
+      searchInput.addEventListener('input', (e) => {
+        renderOptions(e.target.value);
+        toggleDropdown(true);
+      });
+
+      // Handle backspace to remove the last selected item
+      searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && searchInput.value === '') {
+          if (selectedItems.length > 0) {
+            removeItem(selectedItems[selectedItems.length - 1]);
+          }
+        }
+      });
+
+      // Handle keyboard navigation
+      searchInput.addEventListener('keydown', handleKeyboard);
+
+      // Optional: Handle focus styles for accessibility
+      optionsList.addEventListener('keydown', handleKeyboard);
+    });
+  </script>
+</body>
+</html>
